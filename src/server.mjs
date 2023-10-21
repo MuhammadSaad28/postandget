@@ -1,4 +1,5 @@
 import express from 'express';
+import serverless from "serverless-http";
 import cors from 'cors';
 const app = express();
 app.use(express.json());
@@ -48,3 +49,6 @@ app.get("/users", (req,res)=>{
 app.listen(port,()=>{
     console.log("Port Started");
 })
+
+
+module.exports.handler = serverless(app);
