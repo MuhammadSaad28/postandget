@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post and Get</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+
+<body>
+    <h1>POST AND GET REQUEST FOR USERS</h1>
+    <form onsubmit="signup()">
+        <label for="fn">First Name</label>
+        <input type="text" name="fn" placeholder="Enter First Name" id="fn">
+        <label for="ln">Last Name</label>
+        <input type="text" name="ln" placeholder="Enter Last Name" id="ln">
+        <label for="un">UserName</label>
+        <input type="text" name="un" placeholder="Enter UserName" id="un">
+        <label for="pass">Password</label>
+        <input type="password" name="pass" placeholder="Enter Password" id="pass">
+        <br>
+        <button type="submit">Submit</button>
+
+        <p id="message"></p>
+    </form>
+    <br>
+    <br>
+    <br>
+    <br>
+
+    <button onclick="showAllResults()">Show All Users</button>
+    <br><br>
+    <p id="allUsers">
+
+    </p>
+     
+
+
+    <p id="update"></p>
+
+
+    <button onclick="deleteAllUsers()">Delete All Users</button>
+
+
+    <script>
+
+        function signup() {
+
+            let firstName = document.getElementById("fn").value;
+            let lastName = document.getElementById("ln").value;
+            let userName = document.getElementById("un").value;
+            let password = document.getElementById("pass").value;
+
+            axios.post("http://localhost:2500/user", {
+                "firstName": firstName,
+                "lastName": lastName,
+                "userName": userName,
+                "password": password,
+            })
+                .then(function (response) {
+                    console.log(response.data);
+                    document.querySelector("#message").innerHTML = response.data;
+                }
+                    .catch(function (error) {
+                        console.log(error.message);
+                    })
+
+                )
+
+        }
+
+        function showAllResults() {
+            document.querySelector("#allUsers").innerHTML = '';
+            axios.get("http://localhost:2500/users")
+                .then(function (response) {
+                    console.log(response.data);
+                    response.data.map((eachUser, index) => {
+                        document.querySelector("#allUsers").innerHTML += `${index + 1}) <br> FullName : ${eachUser.firstName} ${eachUser.lastName} <br>  UserName :  ${eachUser.userName} <br>  Password : ${eachUser.password} <br>  
+                        <button onclick="editUser(${eachUser.id})">✏️</button>
+                        <button onclick="deleteUser(${eachUser.id})">🗑️</button> <br>`
+                    })
+                })
+                .catch(function (error) {
+                    console.log(error.message);
+                })
+
+        }
+
+
+        function editUser(userId) {
+            axios.get(`http://localhost:2500/user/${userId}`)
+                .then(function (response) {
+                    const userToEdit = response.data;
+
+                    document.getElementById("update").innerHTML = `
+                        <form onsubmit="updateUser(event, ${userId})">
+                            <label for="fn1">First Name</label>
+                            <input type="text" name="fn1" placeholder="Enter First Name" id="fn1" value="${userToEdit.firstName}">
+                            <label for="ln1">Last Name</label>
+                            <input type="text" name="ln1" placeholder="Enter Last Name" id="ln1" value="${userToEdit.lastName}">
+                            <label for="un1">UserName</label>
+                            <input type="text" name="un1" placeholder="Enter UserName" id="un1" value="${userToEdit.userName}">
+                            <label for="pass1">Password</label>
+                            <input type="password" name="pass1" placeholder="Enter Password" id="pass1" value="${userToEdit.password}">
+                            <br>
+                            <button type="submit">Update</button>
+                        </form>
+                    `;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+        }
+
+        function updateUser(event, userId) {
+            
+            event.preventDefault(); 
+
+            let fn = document.getElementById("fn1").value;
+            let ln = document.getElementById("ln1").value;
+            let un = document.getElementById("un1").value;
+            let pass = document.getElementById("pass1").value;
+
+            let updatedData = {
+                "firstName": fn,
+                "lastName": ln,
+                "userName": un,
+                "password": pass,
+            };
+
+            axios.put(`http://localhost:2500/user/${userId}`, updatedData)
+                .then(function (response) {
+                    console.log(response.data);
+                    showAllResults();
+                    document.getElementById("update").innerHTML = '';
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+               
+        }
+
+      
+        function deleteUser(userId){
+            axios.delete(`http://localhost:2500/user/${userId}`)
+            .then(function(response){
+                console.log(response.data);
+                showAllResults();
+            }).catch(function(error){
+                console.log(error);
+            }) 
+            
+        }
+       
+        function deleteAllUsers(){
+            axios.delete("http://localhost:2500/users")
+            .then(function(response){
+                showAllResults();
+                console.log(response.data);
+            }).catch(function(error){
+                console.log(error);
+            }) 
+        }
+
+
+
+    </script>
+
+</body>
+
+</html>
